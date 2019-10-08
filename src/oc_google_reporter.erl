@@ -21,6 +21,7 @@
          report/2]).
 
 -include_lib("opencensus/include/opencensus.hrl").
+-include_lib("kernel/include/logger.hrl").
 
 -define(TRACE_URL(ProjectId),
        <<"https://cloudtrace.googleapis.com/v1/projects/", ProjectId/binary, "/traces">>).
@@ -42,6 +43,7 @@ report(Spans, Opts) ->
     {ok, Creds} = augle:creds_from(Source),
     Headers = augle:headers(Creds),
     PatchBody = jsx:encode(#{traces => format_spans(ProjectId, Spans)}),
+    ?LOG_INFO("### report ~p", [Spans]),
     case hackney:patch(?TRACE_URL(ProjectId), Headers, PatchBody, []) of
         {ok, Status, _Headers, _Client} when Status =:= 204
                                            ; Status =:= 200 ->
